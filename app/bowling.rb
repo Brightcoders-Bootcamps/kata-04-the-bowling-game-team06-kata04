@@ -1,97 +1,82 @@
-require './player.rb'
+# frozen_string_literal: true
 
-class Bowling   
-    attr_reader :rolls
+# the class manage the game status
+class Bowling
+  attr_reader :rolls
 
-    def initialize
-        @rolls =[]
-        @player = Player.new
+  # initialize class method with player and pins
+  def initialize(player, pins)
+    @frames = []
+    @player = player
+    @pins = pins
+  end
+
+  # this method make a roll
+  def roll
+    @pins.knock_pins(@player.roll(@pins.up))
+  end
+
+  # this method is the game in each frame
+  def play_frame
+    @pins.up_pins
+    frame = @frames.length + 1
+
+    f_roll = roll
+    @pins.up_pins if f_roll == 10 && frame == 10
+    s_roll = roll
+
+    preview = f_roll + s_roll
+    t_roll = third_roll(preview) if frame == 10
+    preview += t_roll if t_roll != nil
+    bonus = bonus?(f_roll, s_roll)
+
+    add_bonus(f_roll,s_roll,frame) if frame > 1
+
+    { f_roll: f_roll, s_roll: s_roll, t_roll: t_roll, points: preview + sum_score(frame), bonus: bonus }
+  end
+
+  def sum_score(frame)
+    if frame > 1
+      @frames[frame - 2][:points]
+    else
+      0
     end
+  end
 
-    def roll
-        frame = @rolls.length()
-        pins_up = 10
-        puts "------ #{frame} -----"
-    # tirar primer tiro
-        f_roll = @player.roll(pins_up)
-        s_roll = 0
-        t_roll = 0
-        bonus = nil
-
-        pins_up -= f_roll
-
-
-        if f_roll == 10
-            if frame != 9
-                bonus = :strike
-            else
-                pins_up = 10
-                s_roll = player.roll(pins_up)
-
-                t_roll = player.roll(10) if (f_roll + s_roll == 10) || (f_roll + s_roll == 20)             
-            end
-        else
-            s_roll = player.roll(pins_up)
-
-            if f_roll + s_roll == 10
-                if frame != 9 
-                    bonus = :spare
-                else
-                    pins_up = 10
-                    t_roll = player.roll(pins_up) 
-            end
-        end
-       # frame: 1 - 9
-            # f_roll == 10 
-                # - chuza
-                # - pasar al siguiente frame 
-            # f_roll < 10
-                # - tirar segunda bola
-                # f_roll + s_roll == 10 
-                    # - spare
-                    #- siguiente frame 
-       # frame: 10
-        # tirar segunda bola
-            # s_roll == 10 o spare 
-             # - tirar tercero
-
+  def add_bonus(f_roll, s_roll, frame)
+    prev_frame = frame - 2
+    bonus = @frames[prev_frame][:bonus]
+    if bonus == :strike
+        @frames[prev_frame][:points] += f_roll + s_roll
+    elsif bonus == :spare
+        @frames[prev_frame][:points] += f_roll
     end
+  end
 
-#    def score(roll_index = 0)
-#        if aStrike?(roll_index)
-#            score(roll_index + 1) + 10 + strikeBonus(roll_index)
-#        elsif aSpare?(roll_index)
-#            score(roll_index + 2) + 10 + spareBonus(roll_index)
-#        end
-#    end
-#
-#
-#    def rollsInFrame(roll_index)
-#        roll_at(roll_index) + roll_at(roll_index + 1)
-#    end
-#
-#    def spareBonus(roll_index)
-#        roll_at(roll_index + 2)
-#    end
-#
-#    def strikeBonus(roll_index)
-#        roll_at(roll_index + 1) + roll_at(roll_index + 2)
-#    end
-#
-#    def aStrike?(roll_index)
-#        roll_at(roll_index) == 10
-#    end
-#
-#    def aSpare?(roll_index)
-#        rollsInFrame(roll_index) == 10
-#    end
-#
-#    def roll_at(index)
-#        rolls[index] || 0
-#    end
-        
-        
+  # this method add a new frame
+  def add_frame
+    @frames << play_frame
+  end
+
+  # validating if is a third roll or not
+  def third_roll(preview)
+    if [10, 20].include?(preview)
+      @pins.up_pins
+      roll
+    end
+  end
+
+  # validating if the user won a bonus or not
+  def bonus?(f_roll, s_roll)
+    if f_roll == 10
+      :strike
+    elsif f_roll + s_roll == 10
+      :spare
+    end
+  end
+
+  # the number of frames (score)
+  def score
+    @frames
+  end
 end
-
-game = Bowling.new
-puts game.roll
