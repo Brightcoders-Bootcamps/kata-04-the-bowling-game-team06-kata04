@@ -1,7 +1,9 @@
 ![BrightCoders Logo](img/logo-bc.png)
 
+![badge](badges/rubycritic_badge_score.svg)
 # Kata El Juego de Boliche
 ![cover](img/cover.jpg)
+
 
 ## Pre-requisitos
 Para evaluar tu código e identificar posibles mejoras debes instalar y utilizar las siguientes herramientas:
