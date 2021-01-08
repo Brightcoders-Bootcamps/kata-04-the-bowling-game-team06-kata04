@@ -2,7 +2,7 @@
 
 # the class manage the game status
 class Bowling
-  attr_reader :rolls
+  attr_reader :frames
 
   # initialize class method with player and pins
   def initialize(player, pins)
@@ -27,12 +27,11 @@ class Bowling
 
     preview = f_roll + s_roll
     t_roll = third_roll(preview) if frame == 10
-    preview += t_roll if t_roll != nil
-    bonus = bonus?(f_roll, s_roll)
+    preview += t_roll unless t_roll.nil?
 
-    add_bonus(f_roll,s_roll,frame) if frame > 1
+    add_bonus(f_roll, s_roll, frame) if frame > 1
 
-    { f_roll: f_roll, s_roll: s_roll, t_roll: t_roll, points: preview + sum_score(frame), bonus: bonus }
+    { f_roll: f_roll, s_roll: s_roll, t_roll: t_roll, points: preview + sum_score(frame), bonus: bonus?(f_roll, s_roll) }
   end
 
   def sum_score(frame)
@@ -46,10 +45,11 @@ class Bowling
   def add_bonus(f_roll, s_roll, frame)
     prev_frame = frame - 2
     bonus = @frames[prev_frame][:bonus]
-    if bonus == :strike
-        @frames[prev_frame][:points] += f_roll + s_roll
-    elsif bonus == :spare
-        @frames[prev_frame][:points] += f_roll
+    case bonus
+    when :strike
+      @frames[prev_frame][:points] += f_roll + s_roll
+    when :spare
+      @frames[prev_frame][:points] += f_roll
     end
   end
 
